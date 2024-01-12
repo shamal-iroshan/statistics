@@ -9,7 +9,11 @@ import {
   TableBody
 } from '@mui/material';
 import { useAppSelector } from '../../redux/hooks';
-import { PullRequestData, formatPullRequests } from '../../utils';
+import {
+  PullRequestData,
+  filterUniqueUsers,
+  formatPullRequests
+} from '../../utils';
 import { PullRequest } from '../../redux/github/types';
 import { labelTypes } from '../../utils/constants';
 
@@ -58,7 +62,10 @@ export default function StatisticsTable(): React.ReactElement {
         );
       });
     }
-    const filteredAssignees = selectedAssignee ? [selectedAssignee] : assignees;
+    const uniqueAssignees = filterUniqueUsers(filteredPullRequests);
+    const filteredAssignees = selectedAssignee
+      ? [selectedAssignee]
+      : uniqueAssignees;
     setFilteredData(
       formatPullRequests(filteredPullRequests, filteredAssignees)
     );

@@ -120,7 +120,13 @@ export const formatPendingPullRequests = (
         }
       }
     });
-    formatedData.push(dataObject);
+    if (
+      dataObject.featureCount > 0 ||
+      dataObject.bugCount > 0 ||
+      dataObject.otherCount > 0
+    ) {
+      formatedData.push(dataObject);
+    }
   }
   return formatedData;
 };

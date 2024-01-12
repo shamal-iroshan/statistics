@@ -9,17 +9,66 @@ import {
   TableBody
 } from '@mui/material';
 import { useAppSelector } from '../../redux/hooks';
-import { PendingPullRequestData, formatPendingPullRequests } from '../../utils';
+import {
+  PendingPullRequestData,
+  filterUniqueUsers,
+  formatPendingPullRequests
+} from '../../utils';
+import { PullRequest } from '../../redux/github/types';
 
 export default function PendingReviewsTable(): React.ReactElement {
-  const { pullRequests, assignees } = useAppSelector((state) => state.gitHub);
+  const {
+    pullRequests,
+    assignees,
+    selectedBranch,
+    selectedAssignee,
+    selectedFromDate,
+    selectedToDate,
+    selectedLabel
+  } = useAppSelector((state) => state.gitHub);
   const [filteredData, setFilteredData] = useState<PendingPullRequestData[]>(
     []
   );
 
   useEffect(() => {
-    setFilteredData(formatPendingPullRequests(pullRequests, assignees));
-  }, [assignees, pullRequests]);
+    let filteredPullRequests = [...pullRequests];
+    if (selectedAssignee) {
+      filteredPullRequests = pullRequests.filter((pullRequest: PullRequest) => {
+        return pullRequest.user.login === selectedAssignee;
+      });
+    }
+    if (selectedBranch) {
+      filteredPullRequests = pullRequests.filter((pullRequest: PullRequest) => {
+        return pullRequest.base.ref === selectedBranch;
+      });
+    }
+    if (selectedFromDate && selectedToDate) {
+      const fromDate = new Date(selectedFromDate).getTime();
+      const toDate = new Date(selectedToDate).getTime();
+      filteredPullRequests = pullRequests.filter((pullRequest: PullRequest) => {
+        const pullRequestDate = new Date(pullRequest.created_at).getTime();
+        return pullRequestDate >= fromDate && pullRequestDate <= toDate;
+      });
+    }
+    if (selectedLabel) {
+      filteredPullRequests = pullRequests.filter((pullRequest: PullRequest) => {
+        return pullRequest.labels.some((label) => label.name === selectedLabel);
+      });
+    }
+    const uniqueAssignees = filterUniqueUsers(filteredPullRequests);
+    const filteredAssignees = selectedAssignee
+      ? [selectedAssignee]
+      : uniqueAssignees;
+    setFilteredData(formatPendingPullRequests(pullRequests, filteredAssignees));
+  }, [
+    assignees,
+    pullRequests,
+    selectedAssignee,
+    selectedBranch,
+    selectedFromDate,
+    selectedLabel,
+    selectedToDate
+  ]);
 
   return (
     <TableContainer component={Paper}>

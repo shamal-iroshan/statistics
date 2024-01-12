@@ -168,6 +168,9 @@ export const githubSlice = createSlice({
     },
     setIssuesCommented: (state: any, action: PayloadAction<boolean>) => {
       state.issuesCommented = action.payload;
+    },
+    setAssignees: (state: any, action: PayloadAction<string[]>) => {
+      state.assignees = action.payload;
     }
   }
 });
